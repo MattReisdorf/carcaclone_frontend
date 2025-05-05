@@ -1,4 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import { Lobby } from "../interfaces/LobbyInterfaces";
 
 // Importing logo from assets
 import logo from "../assets/carcaclone.png";
@@ -9,7 +13,7 @@ import {
   names,
   NumberDictionary,
 } from "unique-names-generator";
-import { Link } from "react-router-dom";
+
 
 // Generate Player's UUID
 const generateUUID = () => {
@@ -24,6 +28,9 @@ const generateUUID = () => {
 };
 
 const HomePage: React.FC = () => {
+  const clientRef = useRef<Client | null>(null);
+  const navigate = useNavigate();
+
   // Retrieve or Generate and Store Player's UUID
   let playerId = localStorage.getItem("playerId");
   if (!playerId) {
@@ -41,6 +48,50 @@ const HomePage: React.FC = () => {
       style: "capital",
     });
     localStorage.setItem("playerName", playerName);
+  }
+
+  // Set up STOMP Client on Mount
+  useEffect(() => {
+    const stompClient = new Client({
+      brokerURL: undefined,
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      reconnectDelay: 5000
+    });
+    stompClient.onConnect = () => {
+      stompClient.subscribe("/topic/lobby", (message) => {
+        try {
+          const lobby: Lobby = JSON.parse(message.body);
+          console.log(lobby);
+          if (lobby.lobbyId) {
+            navigate(`/lobby/${lobby.lobbyId}`)
+          }
+        } catch (error) {
+          console.error("Error parsing lobby creation message: ", error);
+        }
+      })
+    }
+    stompClient.activate();
+    console.log("Stomp Client Activated");
+    clientRef.current = stompClient;
+    console.log("Client Ref Set To: ", clientRef.current)
+
+    return () => {
+      stompClient.deactivate();
+      console.log("Stomp Client Deactivated");
+    }
+  }, []);
+
+  // Create Lobby Handler
+  const createLobby = () => {
+    console.log("Create Lobby Handler")
+    clientRef.current?.publish({
+      destination: "/app/createLobby",
+      body: JSON.stringify({
+        action: "createLobby",
+        playerId: playerId,
+        playerName: playerName
+      })
+    })
   }
 
   return (
@@ -80,7 +131,7 @@ const HomePage: React.FC = () => {
                 <div className="h-full w-full">
                   <button
                     className="bg-picton-blue-500 text-mirage-500 h-full w-full transform cursor-pointer rounded-lg border border-transparent font-semibold hover:scale-102 hover:border"
-                    onClick={() => console.log("Create Lobby")}
+                    onClick={createLobby}
                   >
                     Create Lobby
                   </button>
