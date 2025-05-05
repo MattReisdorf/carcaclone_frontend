@@ -1,68 +1,97 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+@import "tailwindcss";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+@layer theme, base, components, utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@theme {
+  --font-roboto: "Roboto", monospace;
+  --breakpoint-md: 811px;
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+  --color-picton-blue-50: #F5FDFF;
+  --color-picton-blue-100: #E8FBFF;
+  --color-picton-blue-200: #C7F5FF;
+  --color-picton-blue-300: #A3EBFF;
+  --color-picton-blue-400: #5ED7FF;
+  --color-picton-blue-500: #1abaff;
+  --color-picton-blue-600: #15A0E6;
+  --color-picton-blue-700: #0D7BBF;
+  --color-picton-blue-800: #095B99;
+  --color-picton-blue-900: #053C73;
+  --color-picton-blue-950: #02224A;
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
+  --color-supernova-50: #FFFEF2;
+  --color-supernova-100: #FFFCE8;
+  --color-supernova-200: #FFF8C4;
+  --color-supernova-300: #FCF09F;
+  --color-supernova-400: #FCE25B;
+  --color-supernova-500: #facc14;
+  --color-supernova-600: #E0B010;
+  --color-supernova-700: #BA860B;
+  --color-supernova-800: #966208;
+  --color-supernova-900: #704304;
+  --color-supernova-950: #472601;
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  --color-mirage-50: #EDF2F5;
+  --color-mirage-100: #DDE5EB;
+  --color-mirage-200: #A9BBC9;
+  --color-mirage-300: #7E94A8;
+  --color-mirage-400: #3B4D69;
+  --color-mirage-500: #0f1729;
+  --color-mirage-600: #0C1324;
+  --color-mirage-700: #090E1F;
+  --color-mirage-800: #060A1A;
+  --color-mirage-900: #030612;
+  --color-mirage-950: #01040D;
+    
+  --color-alabaster-50: #FFFFFF;
+  --color-alabaster-100: #FFFFFF;
+  --color-alabaster-200: #FFFFFF;
+  --color-alabaster-300: #FCFEFF;
+  --color-alabaster-400: #FAFBFC;
+  --color-alabaster-500: #f8fafc;
+  --color-alabaster-600: #C8D5E3;
+  --color-alabaster-700: #8AA0BD;
+  --color-alabaster-800: #597196;
+  --color-alabaster-900: #324A73;
+  --color-alabaster-950: #15264A;
+    
+    --color-primary-50: #00121a;
+    --color-primary-100: #002433;
+    --color-primary-200: #004766;
+    --color-primary-300: #006b99;
+    --color-primary-400: #008fcc;
+    --color-primary-500: #00b2ff;
+    --color-primary-600: #33c2ff;
+    --color-primary-700: #66d1ff;
+    --color-primary-800: #99e0ff;
+    --color-primary-900: #ccf0ff;
+    --color-primary-950: #e5f7ff;
+    
+    --color-secondary-50: #191401;
+    --color-secondary-100: #322801;
+    --color-secondary-200: #645002;
+    --color-secondary-300: #967903;
+    --color-secondary-400: #c8a104;
+    --color-secondary-500: #fac905;
+    --color-secondary-600: #fbd437;
+    --color-secondary-700: #fcdf69;
+    --color-secondary-800: #fde99b;
+    --color-secondary-900: #fef4cd;
+    --color-secondary-950: #fefae6;
+    
+    --color-accent-50: #00111a;
+    --color-accent-100: #002133;
+    --color-accent-200: #004266;
+    --color-accent-300: #006399;
+    --color-accent-400: #0085cc;
+    --color-accent-500: #00a6ff;
+    --color-accent-600: #33b8ff;
+    --color-accent-700: #66c9ff;
+    --color-accent-800: #99dbff;
+    --color-accent-900: #ccedff;
+    --color-accent-950: #e5f6ff;
 }
