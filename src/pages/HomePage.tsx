@@ -7,8 +7,6 @@ import { Lobby } from "../interfaces/LobbyInterfaces";
 // Importing logo from assets
 import logo from "../assets/carcaclone.png";
 
-import placeholder from "../assets/art-placeholder.jpg";
-
 import background from "../assets/landing-background-v1.png";
 
 // For Generating Player Names
