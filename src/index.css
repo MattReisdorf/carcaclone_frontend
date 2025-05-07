@@ -93,3 +93,12 @@
   --color-accent-900: #ccedff;
   --color-accent-950: #e5f6ff;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
