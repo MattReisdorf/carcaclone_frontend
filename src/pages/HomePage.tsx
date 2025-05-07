@@ -55,11 +55,14 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const stompClient = new Client({
       brokerURL: undefined,
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () =>
+        new SockJS(`http://localhost:8080/ws?playerId=${playerId}`),
       reconnectDelay: 5000,
+      connectHeaders: { playerId },
+      debug: (msg) => console.log("[STOMP]", msg),
     });
     stompClient.onConnect = () => {
-      stompClient.subscribe("/topic/lobby", (message) => {
+      stompClient.subscribe(`/user/queue/lobbyCreated`, (message) => {
         try {
           const lobby: Lobby = JSON.parse(message.body);
           console.log(lobby);
@@ -101,8 +104,8 @@ const HomePage: React.FC = () => {
       style={{ backgroundImage: `url(${background})` }}
     >
       <div className="flex h-full w-full flex-col gap-4">
-        <header className="h-[80px] w-full flex items-center justify-center">
-          <img src = {logo} alt = "Carcaclone" style = {{ height: 64, width: 205 }} />
+        <header className="flex h-[80px] w-full items-center justify-center">
+          <img src={logo} alt="Carcaclone" style={{ height: 64, width: 205 }} />
         </header>
         <div className="flex w-full flex-1 flex-col items-center justify-center">
           <div className="flex h-[400px] w-[345px] flex-col gap-4">
@@ -138,20 +141,20 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         </div>
-        <footer className="h-[80px] w-full grid grid-cols-5 grid-rows-1">
+        <footer className="grid h-[80px] w-full grid-cols-5 grid-rows-1">
           <div className="col-span-1 flex h-full w-full items-end justify-start">
-              <h1 className="text-alabaster-500 font-roboto pl-2 text-sm">
-                v0.1
-              </h1>
-            </div>
-            <div className="col-span-3 flex h-full w-full items-end justify-center">
-              <h1 className="text-alabaster-500 font-roboto text-center text-sm">
-                Made by Matt Reisdorf
-              </h1>
-            </div>
-            <div className="col-span-1 flex h-full w-full items-end justify-end">
-              <h1 className="text-alabaster-500 font-roboto pr-2 text-sm">GH</h1>
-            </div>
+            <h1 className="text-alabaster-500 font-roboto pl-2 text-sm">
+              v0.1
+            </h1>
+          </div>
+          <div className="col-span-3 flex h-full w-full items-end justify-center">
+            <h1 className="text-alabaster-500 font-roboto text-center text-sm">
+              Made by Matt Reisdorf
+            </h1>
+          </div>
+          <div className="col-span-1 flex h-full w-full items-end justify-end">
+            <h1 className="text-alabaster-500 font-roboto pr-2 text-sm">GH</h1>
+          </div>
         </footer>
       </div>
     </div>

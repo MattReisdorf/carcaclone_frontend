@@ -94,11 +94,14 @@ const LobbyList: React.FC = () => {
   useEffect(() => {
     const stompClient = new Client({
       brokerURL: undefined,
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () =>
+        new SockJS(`http://localhost:8080/ws?playerId=${playerId}`),
       reconnectDelay: 5000,
+      connectHeaders: { playerId },
+      debug: (msg) => console.log("[STOMP]", msg),
     });
     stompClient.onConnect = () => {
-      stompClient.subscribe("/topic/lobby", (message) => {
+      stompClient.subscribe(`/user/queue/lobbyCreated`, (message) => {
         try {
           const lobby: Lobby = JSON.parse(message.body);
           console.log(lobby);
