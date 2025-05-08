@@ -102,3 +102,40 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+@keyframes ellipsis {
+
+  0%,
+  20% {
+      content: "";
+  }
+
+  40% {
+      content: ".";
+  }
+
+  60% {
+      content: "..";
+  }
+
+  80%,
+  100% {
+      content: "...";
+  }
+}
+
+@layer utilities {
+  .animate-ellipsis::after {
+      content: "";
+      display: inline-block;
+      /* make it a block so we can size it */
+      width: 3ch;
+      /* reserve exactly enough space for “...” */
+      text-align: left;
+      /* left‑align the dots inside that box */
+      @apply ml-1;
+      /* keep your 0.25rem gap */
+      animation: ellipsis 1.5s steps(4, end) infinite;
+  }
+}
