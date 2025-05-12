@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Lobby, Player } from "../interfaces/LobbyInterfaces";
+import { ChatMessage, Lobby, Player } from "../interfaces/LobbyInterfaces";
 import { generateUUID } from "../utils/GenerateUUID";
 import { generateUniqueName } from "../utils/GenerateUniqueName";
 import { Client } from "@stomp/stompjs";
@@ -10,6 +10,7 @@ import GamePiece from "../components/GamePiece";
 
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import SendSquare from "../components/SendSquare";
 
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
@@ -18,10 +19,18 @@ const LobbyPage: React.FC = () => {
   const [host, setHost] = useState<Player | undefined>(undefined);
   const [colorModalOpen, setColorModalOpen] = useState<boolean>(false);
   const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatDraft, setChatDraft] = useState<string>("");
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const clientRef = useRef<Client | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [chatMessages]);
 
   let playerId = localStorage.getItem("playerId");
   if (!playerId) {
@@ -72,13 +81,19 @@ const LobbyPage: React.FC = () => {
         try {
           const updated: Lobby = JSON.parse(message.body);
           if (updated.lobbyId === lobbyId) {
-            console.log("Lobby was updated");
+            // console.log("Lobby was updated");
             setLobby(updated);
           }
         } catch (error) {
           console.error("Error getting lobby sub message: ", error);
         }
       });
+      stompClient.subscribe(`/topic/chat/${lobbyId}`, (message) => {
+        const chat: ChatMessage = JSON.parse(message.body);
+        // console.log("Chat Message: ", chat);
+        setChatMessages((prev) => [...prev, chat]);
+      });
+
       if (!(host?.playerId === playerId)) {
         stompClient.publish({
           destination: "/app/joinLobby",
@@ -91,10 +106,11 @@ const LobbyPage: React.FC = () => {
         });
       }
     };
+
     stompClient.activate();
-    console.log("Stomp Client Activated");
+    // console.log("Stomp Client Activated");
     clientRef.current = stompClient;
-    console.log("Client Ref Set To: ", clientRef.current);
+    // console.log("Client Ref Set To: ", clientRef.current);
   }, []);
 
   const handleReadyToggle = () => {
@@ -113,7 +129,7 @@ const LobbyPage: React.FC = () => {
 
   const handlePrivateToggle = () => {
     // console.log(lobby?.privateLobby);
-    console.log(!lobby?.privateLobby);
+    // console.log(!lobby?.privateLobby);
     clientRef.current?.publish({
       destination: "/app/setPrivate",
       body: JSON.stringify({
@@ -142,19 +158,38 @@ const LobbyPage: React.FC = () => {
     console.log("Game Should Start");
     // clientRef.current?.publish({
     //   destination: "/app/startGame",
-    //   body: JSON.stringify({ 
+    //   body: JSON.stringify({
     //     action: "startGame",
-    //     lobbyId 
+    //     lobbyId
     //   })
     // })
   };
 
-  console.log("Lobby: ", lobby);
+  const handleSendChat = () => {
+    if (!chatDraft.trim() || !clientRef.current) {
+      return;
+    }
+    const message: ChatMessage = {
+      lobbyId: lobbyId!,
+      senderId: playerId,
+      senderName: playerName,
+      senderColor: currentPlayer!.playerColor,
+      content: chatDraft.trim(),
+      timestamp: Date.now(),
+    };
+    clientRef.current.publish({
+      destination: `/app/chat/${lobbyId}`,
+      body: JSON.stringify(message),
+    });
+    setChatDraft("");
+  };
+
+  // console.log("Lobby: ", lobby);
 
   const currentPlayer = lobby?.players.find((p) => p.playerId === playerId);
   const allReady = lobby?.players.every((p) => p.playerReady);
   const enoughPlayers = lobby?.players.length! >= 2;
-  console.log(currentPlayer);
+  // console.log(currentPlayer);
 
   const maxPlayers = 5;
   const slots = Array.from({ length: maxPlayers }, (_, i) => lobby?.players[i]);
@@ -185,7 +220,7 @@ const LobbyPage: React.FC = () => {
                 >
                   {player ? (
                     <>
-                      <span className="text-md text-alabaster-500 font-roboto flex h-full items-center font-semibold md:text-lg">
+                      <span className="text-alabaster-500 font-roboto flex h-full items-center text-base font-semibold md:text-lg">
                         <div
                           className={`mr-2 flex aspect-square h-[50%] min-h-[34px] items-center justify-center rounded-md ${player.playerId === playerId ? "cursor-pointer hover:scale-110" : "cursor-default"} `}
                           onClick={
@@ -200,40 +235,73 @@ const LobbyPage: React.FC = () => {
                           <GamePiece
                             outline={"#FFFFFF"}
                             outlineWidth={10}
-                            height={window.screen.width > 810 ? 30 : 24}
-                            width={window.screen.width > 810 ? 30 : 24}
+                            height={windowWidth > 810 ? 30 : 24}
+                            width={windowWidth > 810 ? 30 : 24}
                             fill={player.playerColor}
                           />
                         </div>
                         {player.playerName}
                       </span>
                       <span
-                        className={`mr-2 ${player.playerReady ? "text-picton-blue-500" : "text-alabaster-700"} text-md font-roboto font-semibold`}
+                        className={`mr-2 ${player.playerReady ? "text-picton-blue-500" : "text-alabaster-700"} font-roboto text-base font-semibold`}
                       >
                         {player.playerReady ? "Ready" : "Not Ready"}
                       </span>
                     </>
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <div className="flex h-full w-[60%] items-center justify-center">
-                        {/* TODO: Bot Logic */}
-                        {/* <button className = "h-[70%] w-[100px] bg-primary-600 rounded-lg">
+                      {/* TODO: Bot Logic */}
+                      {/* <button className = "h-[70%] w-[100px] bg-primary-600 rounded-lg">
                               Add Bot
                             </button> */}
-                        {/* TODO: Bot Logic */}
-                        <span className="animate-ellipsis text-alabaster-500 font-roboto ml-6 text-xs md:text-sm">
-                          Waiting for player
-                        </span>
-                      </div>
+                      {/* TODO: Bot Logic */}
+                      <span className="animate-ellipsis text-alabaster-500 font-roboto ml-6 text-sm md:text-base">
+                        Waiting for player
+                      </span>
                     </div>
                   )}
                 </li>
               ))}
             </ul>
           </div>
+
           <div
-            className={`bg-supernova-500 ${currentPlayer?.playerId === host?.playerId ? "row-span-3" : "row-span-4"} h-full w-full md:col-span-1 ${currentPlayer?.playerId === host?.playerId ? "md:row-span-7" : "md:row-span-8"}`}
-          ></div>
+            className={`bg-white flex flex-col rounded-lg p-2 ${currentPlayer?.playerId === host?.playerId ? "row-span-3" : "row-span-4"} h-full w-full md:col-span-1 ${currentPlayer?.playerId === host?.playerId ? "md:row-span-7" : "md:row-span-8"}`}
+          >
+            <div className="hide-scrollbar mb-2 flex-1 space-y-2 overflow-y-auto">
+              {chatMessages.map((message, index) => {
+                const player = lobby?.players.find(
+                  (player) => player.playerId === message.senderId,
+                );
+                const color = player?.playerColor ?? message.senderColor;
+                return (
+                  <div key={index} className="rounded-lg p-2 font-roboto">
+                    <strong className = {`text-${color}-500`}>{message.senderName}</strong>:{" "}
+                    {message.content}
+                  </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="flex w-full gap-2">
+              <input
+                className="placeholder-alabaster-700 border-alabaster-700 text-alabaster-700 active:text-alabaster-900 focus:text-alabaster-900 active:border-alabaster-900 focus:border-alabaster-900 flex-1 rounded border p-2 focus:ring-0 focus:outline-none"
+                value={chatDraft}
+                onChange={(event) => setChatDraft(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && handleSendChat()}
+                placeholder="Type a message..."
+              />
+              <button className="bg-picton-blue-950/30 hover:bg-picton-blue-950/50 cursor-pointer rounded p-2 hover:scale-104">
+                <SendSquare
+                  height={30}
+                  width={30}
+                  fill={"#f8fafc"}
+                  outline={"#000"}
+                />
+              </button>
+            </div>
+          </div>
 
           <div className="row-span-3 rounded-lg md:col-span-2 md:row-span-2">
             <div

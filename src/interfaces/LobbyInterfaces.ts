@@ -13,5 +13,14 @@ interface Lobby {
   privateLobby: boolean;
 }
 
+interface ChatMessage {
+  lobbyId: string;
+  senderId: string;
+  senderName: string;
+  senderColor: string;
+  content: string;
+  timestamp: number;
+}
 
-export type { Player, Lobby };
+
+export type { Player, Lobby, ChatMessage };

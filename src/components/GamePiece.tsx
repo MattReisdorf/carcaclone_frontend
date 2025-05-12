@@ -31,7 +31,7 @@ const GamePiece: React.FC<GamePieceProps> = ({
           strokeWidth={outlineWidth}
           strokeLinejoin="round"
           fill={fill}
-          fill-rule="evenodd"
+          fillRule="evenodd"
         ></path>
       </g>
     </svg>
