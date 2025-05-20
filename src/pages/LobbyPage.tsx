@@ -1,12 +1,14 @@
 import axios from "axios";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ChatMessage, Lobby, Player } from "../interfaces/LobbyInterfaces";
+import { useNavigate, useParams } from "react-router-dom";
+import { ChatMessage, Lobby, Player, StartGameResponse } from "../interfaces/LobbyInterfaces";
 import { generateUUID } from "../utils/GenerateUUID";
 import { generateUniqueName } from "../utils/GenerateUniqueName";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import GamePiece from "../components/GamePiece";
+
+import background from "../assets/landing-background-v1.png";
 
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -21,6 +23,7 @@ const LobbyPage: React.FC = () => {
   const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatDraft, setChatDraft] = useState<string>("");
+  const navigate = useNavigate();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -94,6 +97,17 @@ const LobbyPage: React.FC = () => {
         setChatMessages((prev) => [...prev, chat]);
       });
 
+
+
+      // --- TESTING RESPONESE FROM STARTGAME ENDPOINT ---
+      stompClient.subscribe(`/topic/lobby/${lobbyId}/start`, (message) => {
+        const response: StartGameResponse = JSON.parse(message.body);
+        if (response.gameId) {
+          navigate(`/${response.gameId}`)
+        }
+      });
+      // --- ---
+
       if (!(host?.playerId === playerId)) {
         stompClient.publish({
           destination: "/app/joinLobby",
@@ -156,13 +170,13 @@ const LobbyPage: React.FC = () => {
 
   const handleStartGame = () => {
     console.log("Game Should Start");
-    // clientRef.current?.publish({
-    //   destination: "/app/startGame",
-    //   body: JSON.stringify({
-    //     action: "startGame",
-    //     lobbyId
-    //   })
-    // })
+    clientRef.current?.publish({
+      destination: "/app/startGame",
+      body: JSON.stringify({
+        action: "startGame",
+        lobbyId: lobbyId
+      })
+    })
   };
 
   const handleSendChat = () => {
@@ -204,7 +218,7 @@ const LobbyPage: React.FC = () => {
   return (
     <div
       className="bg-mirage-500 flex h-screen w-full flex-col gap-4 bg-cover bg-center p-4"
-      // style={{ backgroundImage: `url(${background})` }}
+      style={{ backgroundImage: `url(${background})` }}
     >
       <div className="h-[25px] w-full" />
       <div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-4">

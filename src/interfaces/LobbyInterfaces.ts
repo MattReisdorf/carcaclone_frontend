@@ -22,5 +22,10 @@ interface ChatMessage {
   timestamp: number;
 }
 
+interface StartGameResponse {
+  lobbyId: string;
+  gameId: string;
+}
 
-export type { Player, Lobby, ChatMessage };
+
+export type { Player, Lobby, ChatMessage, StartGameResponse };
