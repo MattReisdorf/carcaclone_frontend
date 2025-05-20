@@ -16,6 +16,7 @@ import SendSquare from "../components/SendSquare";
 
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
+
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [host, setHost] = useState<Player | undefined>(undefined);
@@ -23,40 +24,39 @@ const LobbyPage: React.FC = () => {
   const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatDraft, setChatDraft] = useState<string>("");
-  const navigate = useNavigate();
 
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const navigate = useNavigate();
 
   const clientRef = useRef<Client | null>(null);
 
+  // --- AUTOMATICALLY SCROLLS TO THE BOTTOM OF THE CHAT WINDOW WHENVER THERE'S A NEW MESSAGE ---
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, [chatMessages]);
+  // --- ---
 
   let playerId = localStorage.getItem("playerId");
   if (!playerId) {
     playerId = generateUUID();
     localStorage.setItem("playerId", playerId);
   }
-
   let playerName = localStorage.getItem("playerName");
   if (!playerName) {
     playerName = generateUniqueName();
     localStorage.setItem("playerName", playerName);
   }
 
+  // --- FOR RESIZING THE GAME PIECE SVG ---
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
-
     window.addEventListener("resize", handleResize);
-
-    // Clean up the event listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  // --- ---
 
   const getLobby = useCallback(async () => {
     try {
@@ -84,7 +84,6 @@ const LobbyPage: React.FC = () => {
         try {
           const updated: Lobby = JSON.parse(message.body);
           if (updated.lobbyId === lobbyId) {
-            // console.log("Lobby was updated");
             setLobby(updated);
           }
         } catch (error) {
@@ -93,13 +92,12 @@ const LobbyPage: React.FC = () => {
       });
       stompClient.subscribe(`/topic/chat/${lobbyId}`, (message) => {
         const chat: ChatMessage = JSON.parse(message.body);
-        // console.log("Chat Message: ", chat);
         setChatMessages((prev) => [...prev, chat]);
       });
 
 
 
-      // --- TESTING RESPONESE FROM STARTGAME ENDPOINT ---
+      // --- TESTING RESPONSE FROM STARTGAME ENDPOINT ---
       stompClient.subscribe(`/topic/lobby/${lobbyId}/start`, (message) => {
         const response: StartGameResponse = JSON.parse(message.body);
         if (response.gameId) {
@@ -122,9 +120,7 @@ const LobbyPage: React.FC = () => {
     };
 
     stompClient.activate();
-    // console.log("Stomp Client Activated");
     clientRef.current = stompClient;
-    // console.log("Client Ref Set To: ", clientRef.current);
   }, []);
 
   const handleReadyToggle = () => {
@@ -142,8 +138,6 @@ const LobbyPage: React.FC = () => {
   };
 
   const handlePrivateToggle = () => {
-    // console.log(lobby?.privateLobby);
-    // console.log(!lobby?.privateLobby);
     clientRef.current?.publish({
       destination: "/app/setPrivate",
       body: JSON.stringify({
@@ -169,7 +163,6 @@ const LobbyPage: React.FC = () => {
   };
 
   const handleStartGame = () => {
-    console.log("Game Should Start");
     clientRef.current?.publish({
       destination: "/app/startGame",
       body: JSON.stringify({
@@ -198,12 +191,10 @@ const LobbyPage: React.FC = () => {
     setChatDraft("");
   };
 
-  // console.log("Lobby: ", lobby);
 
   const currentPlayer = lobby?.players.find((p) => p.playerId === playerId);
   const allReady = lobby?.players.every((p) => p.playerReady);
   const enoughPlayers = lobby?.players.length! >= 2;
-  // console.log(currentPlayer);
 
   const maxPlayers = 5;
   const slots = Array.from({ length: maxPlayers }, (_, i) => lobby?.players[i]);
