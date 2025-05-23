@@ -89,7 +89,7 @@ const HomePage: React.FC = () => {
   const createLobby = () => {
     console.log("Create Lobby Handler");
     clientRef.current?.publish({
-      destination: "/app/createLobby",
+      destination: "/app/lobby/createLobby",
       body: JSON.stringify({
         action: "createLobby",
         playerId: playerId,

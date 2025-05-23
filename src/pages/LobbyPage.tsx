@@ -108,7 +108,7 @@ const LobbyPage: React.FC = () => {
 
       if (!(host?.playerId === playerId)) {
         stompClient.publish({
-          destination: "/app/joinLobby",
+          destination: "/app/lobby/joinLobby",
           body: JSON.stringify({
             action: "join",
             lobbyId: lobbyId,
@@ -125,7 +125,7 @@ const LobbyPage: React.FC = () => {
 
   const handleReadyToggle = () => {
     clientRef.current?.publish({
-      destination: "/app/ready",
+      destination: "/app/lobby/ready",
       body: JSON.stringify({
         action: "ready",
         lobbyId: lobbyId,
@@ -139,7 +139,7 @@ const LobbyPage: React.FC = () => {
 
   const handlePrivateToggle = () => {
     clientRef.current?.publish({
-      destination: "/app/setPrivate",
+      destination: "/app/lobby/setPrivate",
       body: JSON.stringify({
         action: "setPrivate",
         lobbyId: lobbyId,
@@ -150,7 +150,7 @@ const LobbyPage: React.FC = () => {
 
   const handleColorChange = (color: string) => {
     clientRef.current?.publish({
-      destination: "/app/changeColor",
+      destination: "/app/lobby/changeColor",
       body: JSON.stringify({
         action: "changeColor",
         lobbyId: lobbyId,
@@ -164,7 +164,7 @@ const LobbyPage: React.FC = () => {
 
   const handleStartGame = () => {
     clientRef.current?.publish({
-      destination: "/app/startGame",
+      destination: "/app/lobby/startGame",
       body: JSON.stringify({
         action: "startGame",
         lobbyId: lobbyId
